@@ -1,9 +1,7 @@
 import { useAtomValue } from "jotai"
 import { showDataAtom } from "./App"
 
-
-
 export function CallBackPage() {
-    const date = useAtomValue(showDataAtom)
+    const date = useAtomValue(showDataAtom);
     return <label>{date}</label>
 }

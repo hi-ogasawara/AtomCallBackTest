@@ -6,72 +6,64 @@ import { CallBackPage } from './CallBackPage';
 import { atom, useAtomValue, useSetAtom } from 'jotai';
 import { useAtomCallback } from 'jotai/utils';
 
-function App() {
-  const [open ,setOpen] = useState(false)
-  const  testAPI = useTestAPI()
-  const settRefresh = useSetAtom(refresh)
-  useAtomValue(userConfig);
+export const showDataAtom = atom<string>("")
+const refresh = atom(false);
 
-  const handleClick = useCallback(async() => {
+const wrapUserConfigTime = atom((get) => {
+  console.log("wrapUserConfigTime:read");
+  return get(userConfigTime);
+})
+
+const userConfigTime = atom((get) => {
+  console.log("userConfigTime:read");
+  get(refresh);
+  return new Date().toString();
+})
+
+const fetchAtom = atom((get) => {
+  console.log("fetchAtom:read");
+  return get(userConfigTime);
+  // return get(wrapUserConfigTime);
+})
+
+const useTestAPI = () => {
+  return useAtomCallback(
+    useCallback((get , set) => {
+      console.log("event");
+      const data = get(fetchAtom);
+      set(showDataAtom , data);
+    },[])
+  );
+};
+
+function App() {
+  const [open ,setOpen] = useState(false);
+  const  testAPI = useTestAPI();
+  const settRefresh = useSetAtom(refresh);
+  useAtomValue(userConfigTime);
+
+  const handleClickOpen = useCallback(async() => {
     await testAPI();
-    setOpen(true)
-    return
+    setOpen(true);
+    return;
   },[testAPI])
 
-  const handleClose = useCallback(() => {
-    setOpen(false)
+  const handleClickClose = useCallback(() => {
+    setOpen(false);
   },[])
 
-  const handleRefresh = useCallback(() => {
-    settRefresh((prev) => !prev)
-  },[settRefresh])
+  const handleClickRefresh = useCallback(() => {
+    settRefresh((prev) => !prev);
+  },[settRefresh]);
 
   return (
     <>
-      <button onClick={handleClick}>CallBackPage:OpenAndUpdate</button>
-      <button onClick={handleClose}>CallBackPage:Close</button>
-      <button onClick={handleRefresh}>depend: update</button>
+      <button onClick={handleClickOpen}>CallBackPage:OpenAndUpdate</button>
+      <button onClick={handleClickClose}>CallBackPage:Close</button>
+      <button onClick={handleClickRefresh}>depend: update</button>
       {open && (<CallBackPage/>)}
     </>
   );
 }
 
 export default App;
-
-const refresh = atom(false);
-
-const userConfig = atom(async(get) => {
-  console.log("userConfig:read")
-  get(refresh);
-  await sleep(1000);
-  return { time:  new Date().toString()}
-})
-
-const wrapUserConfig = atom(async(get) => {
-  console.log("wrapUserConfig:read")
-  const config = await get(userConfig);
-  return config
-})
-
-const fetchAtom = atom(async(get) => {
-  console.log("fetchAtom:read");
-  // const config = await get(userConfig);
-  const config = await get(wrapUserConfig);
-  return config.time
-})
-
-export const showDataAtom = atom<string>("")
-
-export const useTestAPI = () => {
-  return useAtomCallback(
-    useCallback(async (get , set) => {
-      console.log("event")
-      const data = await get(fetchAtom)
-      set(showDataAtom , data)
-    },[])
-  );
-};
-
-export function sleep(waitMillisec: number) {
-  return new Promise((resolve) => setTimeout(resolve, waitMillisec));
-}
