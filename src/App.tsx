@@ -36,9 +36,18 @@ const useTestAPI = () => {
   );
 };
 
+// write-only pattern
+// const writeTestAPI = atom(null, async (get, set) => {
+//   console.log("writeTestAPI:write");
+//   const data = await get(fetchAtom);
+//   set(showDataAtom , data);
+// })
+
 function App() {
   const [open ,setOpen] = useState(false);
-  const  testAPI = useTestAPI();
+  // write-only pattern
+  // const setWriteTestAPI = useSetAtom(writeTestAPI);
+  const testAPI = useTestAPI();
   const settRefresh = useSetAtom(refresh);
   useAtomValue(userConfigTime);
 
@@ -47,6 +56,12 @@ function App() {
     setOpen(true);
     return;
   },[testAPI])
+
+  // write-only pattern
+  // const handleClickOpenWrite = useCallback(() => {
+  //   setWriteTestAPI();
+  //   setOpen(true);
+  // },[setWriteTestAPI])
 
   const handleClickClose = useCallback(() => {
     setOpen(false);
@@ -58,7 +73,9 @@ function App() {
 
   return (
     <>
-      <button onClick={handleClickOpen}>CallBackPage:OpenAndUpdate</button>
+      <button onClick={handleClickOpen}>CallBackPage:OpenAndUpdate(useAtomCallback)</button>
+      {/* write-only pattern */}
+      {/* <button onClick={handleClickOpenWrite}>CallBackPage:OpenAndUpdate(Write)</button> */}
       <button onClick={handleClickClose}>CallBackPage:Close</button>
       <button onClick={handleClickRefresh}>depend: update</button>
       {open && (<CallBackPage/>)}
