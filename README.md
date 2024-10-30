@@ -1,46 +1,34 @@
-# Getting Started with Create React App
+# AtomCallBackTest
+Checking the behavior of write-only atom and useAtomCallback
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+## Atoms not used in components are read
+I thought it would not read for the following reasons, but it does
+ - write-only atom “get” does not track dependencies
+ - fetchAtom is not used in the component (“useAtomValue”　or "useAtom" is not set)
 
-## Available Scripts
+### Even though read-only atom (fetchAtom) is used only with useAtomCallBack When “userConfigTime” is used in a component, fetchAtom is read.
+1. Update data with the “CallBackPage:OpenAndUpdate” button.
+2. “Dependency: Update” button Update dependencies.
+3. Console log shows fetchAtom:read (fetchAtom is being read).
+*The same event occurs with write-only atom instead of useAtomCallBack To confirm, uncomment the write-only pattern.
 
-In the project directory, you can run:
+### NOTE
+#### If you change a dependency without ever updating it, fetchAtom is not read.
+1. Reload.
+2. “Dependency: Update” button Update dependencies.
+3. The console log does not show fetchAtom:read (fetchAtom is not read).
+*The same event occurs with write-only atom instead of useAtomCallBack To confirm, uncomment the write-only pattern.
 
-### `npm start`
+#### Instead of userConfigTime in fetchAtom Get (uncomment) wrapUserConfigTime. If the dependency is updated after this, wrapUserConfigTime is read instead of fetchAtom.
+1. Comment out return get(userConfigTime) and uncomment return get(wrapUserConfigTime) in fetchAtom.
+2. Update data with the “CallBackPage:OpenAndUpdate” button.
+3. “Dependency: Update” button Update dependencies.
+4. wrapUserConfigTime:read appears in console log (read to wrapUserConfigTime).
+*The same event occurs with write-only atom instead of useAtomCallBack To confirm, uncomment the write-only pattern.
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
-
-The page will reload if you make edits.\
-You will also see any lint errors in the console.
-
-### `npm test`
-
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
-
-### `npm run build`
-
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
-
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
-
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
-
-### `npm run eject`
-
-**Note: this is a one-way operation. Once you `eject`, you can’t go back!**
-
-If you aren’t satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
-
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you’re on your own.
-
-You don’t have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn’t feel obligated to use this feature. However we understand that this tool wouldn’t be useful if you couldn’t customize it when you are ready for it.
-
-## Learn More
-
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
-
-To learn React, check out the [React documentation](https://reactjs.org/).
+## Inference from the above
+It is likely that atom has been read in the following conditions.
+ - write-only atom is used at least once.
+ - The atom that is a dependency within the atom that the write-only atom is getting is used in the component.  
+   (userConfigTime in fetchAtom in useTestAPI is used by the component.)  
+   (In this case, dependencies are only tracked up to the first level.)  
